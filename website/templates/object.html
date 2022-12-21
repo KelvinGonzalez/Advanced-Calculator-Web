@@ -1,0 +1,282 @@
+{% extends "base.html" %} {% block title %}Object{% endblock %} {% block content %}
+<div class="container-fluid">
+    <div class="row h">
+        <div class="col-9" style="height:calc(100vh - 58px); overflow-y:scroll;">
+            <div class="container">
+                {% if object is defined %}
+                <br>
+                <h2 align="center">{{ object|string }}</h2>
+                {% if user_id == -1 %}
+                    <center>By You</center>
+                {% else %}
+                    <center>By {{User.query.get(user_id).username}}</center>
+                {% endif %}
+                {% if object.shared_time != None %}
+                    <center>{{object.shared_time}}</center>
+                {% endif %}
+                <br>
+                <div class="row">
+                    <div class = "col">
+                        <ol class="list-group">
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ user_id }}" name="user_id" />
+                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                <input type="hidden" value="{{ 3 }}" name="collapsed" />
+                                <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Variables</button>
+                            </form>
+                            <div class="col" style="padding: 0; margin: 0;">
+                                <div class="collapse multi-collapse {{'show' if user.collapsed[3] else ''}}">
+                                    <ol class="list-group w-100">
+                                        {% for variable in object.variables %}
+                                        <li class="list-group-item">
+                                            <form action="{{ url_for('views.object') }}" method="POST">
+                                                {{ variable }}
+                                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                                <input type="hidden" value="{{ variable }}" name="delete_var" />
+                                                {% if user_id == -1 %}<button class="close" type="submit"><span aria-hidden="true">&times;</span></button>{% endif %}
+                                            </form>
+                                        </li>
+                                        {% endfor %}
+                                    </ol>
+                                    {% if user_id == -1 %}
+                                    <form action="{{ url_for('views.object') }}" method="POST">
+                                        <div class="input-group">
+                                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                            <input type="text" class="form-control" name="def_var" placeholder="Enter variable name(s)..." style="font-size: 16px; height:56px;">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ user_id }}" name="user_id" />
+                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                <input type="hidden" value="{{ 5 }}" name="collapsed" />
+                                <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Static Variables</button>
+                            </form>
+                            <div class="col" style="padding: 0; margin: 0;">
+                                <div class="collapse multi-collapse {{'show' if user.collapsed[5] else ''}}">
+                                    <ol class="list-group w-100">
+                                        {% for variable in object.static_variables.keys() %}
+                                        <li class="list-group-item">
+                                            <form action="{{ url_for('views.object') }}" method="POST">
+                                                {{ variable }} = {{ object.static_variables[variable]|string }}
+                                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                                <input type="hidden" value="{{ variable }}" name="delete_staticvar" />
+                                                {% if user_id == -1 %}<button class="close" type="submit"><span aria-hidden="true">&times;</span></button>{% endif %}
+                                            </form>
+                                        </li>
+                                        {% endfor %}
+                                    </ol>
+                                    {% if user_id == -1 %}
+                                    <form action="{{ url_for('views.object') }}" method="POST">
+                                        <div class="input-group">
+                                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                            <input type="text" class="form-control" name="def_staticvar" placeholder="Enter a variable definition..." style="font-size: 16px; height:56px;">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </ol>
+                    </div>
+                    <div class = "col">
+                        <ol class="list-group">
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ user_id }}" name="user_id" />
+                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                <input type="hidden" value="{{ 4 }}" name="collapsed" />
+                                <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Functions</button>
+                            </form>
+                            <div class="col" style="padding: 0; margin: 0;">
+                                <div class="collapse multi-collapse {{'show' if user.collapsed[4] else ''}}">
+                                    <ol class="list-group w-100">
+                                        {% for function in object.functions.keys() %}
+                                        <li class="list-group-item">
+                                            <form action="{{ url_for('views.object') }}" method="POST">
+                                                {{ function }}({{ ', '.join(object.functions.get(function).args) }}) = {{ object.functions.get(function).funct }}
+                                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                                <input type="hidden" value="{{ function }}" name="delete_funct" />
+                                                {% if user_id == -1 %}<button class="close" type="submit"><span aria-hidden="true">&times;</span></button>{% endif %}
+                                            </form>
+                                        </li>
+                                        {% endfor %}
+                                    </ol>
+                                    {% if user_id == -1 %}
+                                    <form action="{{ url_for('views.object') }}" method="POST">
+                                        <div class="input-group">
+                                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                            <input type="text" class="form-control" name="def_funct" placeholder="Enter a function definition..." style="font-size: 16px; height:56px;">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ user_id }}" name="user_id" />
+                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                <input type="hidden" value="{{ 6 }}" name="collapsed" />
+                                <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Static Functions</button>
+                            </form>
+                            <div class="col" style="padding: 0; margin: 0;">
+                                <div class="collapse multi-collapse {{'show' if user.collapsed[6] else ''}}">
+                                    <ol class="list-group w-100">
+                                        {% for function in object.static_functions.keys() %}
+                                        <li class="list-group-item">
+                                            <form action="{{ url_for('views.object') }}" method="POST">
+                                                {{ function }}({{ ', '.join(object.static_functions.get(function).args) }}) = {{ object.static_functions.get(function).funct }}
+                                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                                <input type="hidden" value="{{ function }}" name="delete_staticfunct" />
+                                                {% if user_id == -1 %}<button class="close" type="submit"><span aria-hidden="true">&times;</span></button>{% endif %}
+                                            </form>
+                                        </li>
+                                        {% endfor %}
+                                    </ol>
+                                    {% if user_id == -1 %}
+                                    <form action="{{ url_for('views.object') }}" method="POST">
+                                        <div class="input-group">
+                                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                            <input type="text" class="form-control" name="def_staticfunct" placeholder="Enter a function definition..." style="font-size: 16px; height:56px;">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </ol>
+                    </div>
+                </div>
+                <br>
+                <div class="row w-100 justify-content-center" style="height:56px;">
+                    <!-- <div class="col">
+                    <form action="{{ url_for('views.object') }}" class="row no-gutters" method = "POST" style="height:56px; margin-left:15px;">
+                        <div class="input-group">
+                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                            <input type="text" class="form-control w-100" name="expression" id="expression" placeholder="Enter an expression..." style="font-size: 16px; height:56px">
+                            <button type="submit" class="btn btn-secondary">Send</button>
+                        </div>
+                    </form>
+                    </div> -->
+                    <div class="row">
+                        {% if user_id == -1 %}
+                        <form action="{{ url_for('views.object') }}" method = "POST" style="margin: 4px;">
+                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                            <input type="hidden" value="{{ true }}" name="share" />
+                            <button type="submit" class="btn btn-primary" style="height:56px;">
+                                {% if object.shared_time == None %}
+                                    Share
+                                {% else %}
+                                    Unshare
+                                {% endif %}
+                            </button>
+                        </form>
+                        <form action="{{ url_for('views.object') }}" method = "POST" style="margin: 4px;">
+                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                            <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                            <input type="hidden" value="{{ true }}" name="delete" />
+                            <button type="submit" class="btn btn-danger" style="height:56px;">Delete</button>
+                        </form>
+                        {% else %}
+                        <form action="{{ url_for('views.object') }}" method = "POST" style="margin: 4px;">
+                            <input type="hidden" value="{{ user_id|string }}" name="user_id" />
+                            <input type="hidden" value="{{ object.name }}" name="obj" />
+                            <input type="hidden" value="true" name="unsave" />
+                            <button type="submit" class="btn btn-danger" style="height:56px;">Unsave</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-3" style="height:calc(100vh - 58px); overflow-y:scroll; overflow-x:hidden;">
+            <ol class="list-group" style="width:24.1vw; margin-left:-15px;">
+                <form action="{{ url_for('views.object') }}" method="POST">
+                    <input type="hidden" value="{{ user_id }}" name="user_id" />
+                    <input type="hidden" value="{{ object.name }}" name="obj" />
+                    <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                    <input type="hidden" value="{{ 2 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[2] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in user.objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="false" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ user.objects.get(object)|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.object') }}" method="POST">
+                            <div class="input-group">
+                                <input type="hidden" value="{{ user_id }}" name="user_id" />
+                                <input type="hidden" value="{{ object.name }}" name="obj" />
+                                <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                                <input type="text" class="form-control" name="def_obj" placeholder="Enter an object definition..." style="font-size: 16px; height:56px;">
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <form action="{{ url_for('views.object') }}" method="POST">
+                    <input type="hidden" value="{{ user_id }}" name="user_id" />
+                    <input type="hidden" value="{{ object.name }}" name="obj" />
+                    <input type="hidden" value="{{ 'true' if saved else 'false' }}" name="saved" />
+                    <input type="hidden" value="{{ 7 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Saved Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[7] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in saved_objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ saved_objects.get(object)[0]|string }}" name="user_id" />
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="true" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ saved_objects.get(object)[1]|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search_obj" placeholder="Search for objects..." style="font-size: 16px; height:56px;">
+                                <select class="form-select" name="sort">
+                                    <option value="newest" align="center">Newest</option>
+                                    <option value="popular" align="center">Popular</option>
+                                    <option value="oldest" align="center">Oldest</option>
+                                </select>
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

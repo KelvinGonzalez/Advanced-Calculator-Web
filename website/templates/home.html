@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content%}
+<div class="container-fluid">
+    <div class="row h">
+        <div class="col-9">
+            <div class="row align-items-end" style="height:calc(100vh - 58px - 56px); overflow-y:scroll;">
+                <ol class="list-group w-100">
+                    {% for i in range(user.results|length) %}
+                        {% if i == 0 %}
+                            <li class="list-group-item"><b>{{ user.results[i] }}</b></li>
+                        {% else %}
+                            <li class="list-group-item" style="color:gray;">{{ user.results[i] }}</li>
+                        {% endif %}
+                    {% endfor %}
+                  </ol>
+            </div>
+            <form action="{{ url_for('views.home') }}" class="row no-gutters" method = "POST" style="margin-left:-15px; margin-right:-15px; height:56px;">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="expression" id="expression" placeholder="Enter an expression..." style="font-size: 16px; height:56px;">
+                    <button type="submit" class="btn btn-secondary" style="height:56px;">Send</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-3" style="height:calc(100vh - 58px); overflow-y:scroll; overflow-x:hidden;">
+            <ol class="list-group" style="width:24.1vw; margin-left:-15px;">
+                <form action="{{ url_for('views.edit_collapsed') }}" method="POST">
+                    <input type="hidden" value="{{ 0 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Variables</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[0] else ''}}" id="collapse_variables">
+                        <ol class="list-group w-100">
+                            {% for variable in user.variables.keys() %}
+                            <li class="list-group-item">
+                                <form action="{{ url_for('views.home') }}" method="POST">
+                                    {{ variable }} = {{ user.variables.get(variable)|string }}
+                                    <input type="hidden" value="{{ variable }}" name="var" />
+                                    <button class="close" type="submit"><span aria-hidden="true">&times;</span></button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.home') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="def_var" placeholder="Enter a variable definition..." style="font-size: 16px; height:56px;">
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <form action="{{ url_for('views.edit_collapsed') }}" method="POST">
+                    <input type="hidden" value="{{ 1 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Functions</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[1] else ''}}" id="collapse_functions">
+                        <ol class="list-group w-100">
+                            {% for function in user.functions.keys() %}
+                            <li class="list-group-item">
+                                <form action="{{ url_for('views.delete_funct') }}" method="POST">
+                                    {{ function }}({{ ', '.join(user.functions.get(function).args) }}) = {{ user.functions.get(function).funct }}
+                                    <input type="hidden" value="{{ function }}" name="funct" />
+                                    <button class="close" type="submit"><span aria-hidden="true">&times;</span></button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.home') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="def_funct" placeholder="Enter a function definition..." style="font-size: 16px; height:56px;">
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <form action="{{ url_for('views.edit_collapsed') }}" method="POST">
+                    <input type="hidden" value="{{ 2 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[2] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in user.objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="false" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ user.objects.get(object)|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.home') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="def_obj" placeholder="Enter an object definition..." style="font-size: 16px; height:56px;">
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <form action="{{ url_for('views.edit_collapsed') }}" method="POST">
+                    <input type="hidden" value="{{ 7 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Saved Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[7] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in saved_objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ saved_objects.get(object)[0]|string }}" name="user_id" />
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="true" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ saved_objects.get(object)[1]|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search_obj" placeholder="Search for objects..." style="font-size: 16px; height:56px;">
+                                <select class="form-select" name="sort">
+                                    <option value="newest" align="center">Newest</option>
+                                    <option value="popular" align="center">Popular</option>
+                                    <option value="oldest" align="center">Oldest</option>
+                                  </select>
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Info{% endblock %}
+{% block content%}
+<div class="container-fluid" style="height:calc(100vh - 58px); overflow-y:scroll;">
+    <div class="container">
+        <br>
+        <h3 align="center">Info</h3>
+        <p>
+            <h5>Home Page</h5>
+            The home page includes two main sections, the calculator and the properties tab. In the calculator, you can input whatever expression you'd like, using whatever variables, 
+            functions, or classes that you'd like, and the result will be outputted for you, and will be saved to your clipboard. In the properties tab, you may view all of your 
+            variables, functions, objects, and saved objects. You can click on each tab to collapse or uncollapse each section. Variables and functions can be removed by clicking 
+            the 'x' to the right of its name. You can click on any object, created or saved, to enter the object page with that specific object.
+        </p>
+        <p>
+            <h5>Creating Variables, Functions, and Objects</h5>
+            In the home page, at the end of each tab in the properties section, you can view a text bar which is used to define new variables, functions, or objects, for each tab 
+            respectively. The format to define a variable is "[x] = [y]", such as in the example "x = 1". The format to define a function is "[f]([x]) = [y]", such as in the example 
+            "f1(x, y) = 8*x + y". The format to define an object is "[o]([x])", such as in the example "Obj1(x, y, z)".
+        </p>
+        <p>
+            <h5>Object Page</h5>
+            The object page is used to edit or view the properties of a specific object. It also includes to the right a section where you can view your created and saved objects, 
+            similar to the home page. You can click on each property's tab to collapse or uncollapse each section. Each property may be removed by clicking the 'x' to the right 
+            of its name. Here you can also share or unshare an object, and delete the object.
+        </p>
+        <p>
+            <h5>Creating Variables, Functions, Static Variables, and Static Functions for Objects</h5>
+            In the object page, at the end of each properties tab, you can view a text bar which is used to define new variables, functions, static variables and static function, 
+            for each tab respectively. The format to define variable(s) is "[x], [y]...", such as in the example "x, y, z". The format to define a static variable is "[x] = [y]", such as 
+            in the example "x = 1". The format to define a function or static function is "[f]([x]) = [y]", such as in the example "f1(x, y) = 8*x + y". Non-static functions will 
+            automatically include the parameter "self" to its list of parameters, so you may use whatever variables the object has stored in a function, such as in the example 
+            "f2(other) = self.x + other.x".
+        </p>
+        <p>
+            <h5>Using Objects and their Properties</h5>
+            To create an instance of an object, use the format "[o]([x])", such as in the example "Obj1(1, 2, 3)". This will return an instance of the object which you could use like any 
+            other data type, such as to store in a variable like "o1 = Obj1(1, 2, 3)". To access a variable of an instance, use the format "[i].[x]", such as in the example "o1.x".
+            To call a function, use the format "[i].[f]([x])", such as in the example "o1.f1(1, 2)". To access static variables and static functions, use the same format respectively, but 
+            replacing "[i]" for "[o]", such as in the examples "Obj1.x" and "Obj1.sf1(1, 2)". The difference between them is that static properties are called using the object name, while 
+            non-static properties use the instance name. There are some function names that are reserved for special cases, where to call these functions you do not use the standard 
+            "[i].[f]([x])". An example is the "add" function, where to call it, you need to directly add the instance with another value. A function like this can be defined like 
+            "add(other) = Obj1(self.x + other.x, self.y + other.y, self.z + other.z)" and called like "Obj1(1, 2, 3) + Obj1(4, 5, 6)". The list of special functions is: str, add, sub, mul, 
+            div, pow, cmp, neg, invert, abs, len, call.
+        </p>
+        <p>
+            <h5>Shared Objects Page</h5>
+            The shared objects page shows all objects that have been shared by any user. Each card will display the object name, creator's username, time shared, and the properties of the 
+            object. From here you can save or unsave an object, or unshare an object if you are its creator. This page also displays a section where you can view your created and saved 
+            objects. When you save an object from this page, you may use it as you would with any other object, however you may not modify it. Saved objects will automatically update 
+            with whatever changes its creator may apply to it. This page features a search bar that can be used to more easily find shared objects, and sort them by newest, popular, or 
+            oldest. This search bar is also featured in both the home and object page's shared objects tab.
+        </p>
+        <br><br><br><br><br><br>
+    </div>
+</div>
+{% endblock %}

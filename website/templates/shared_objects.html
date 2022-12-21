@@ -1,0 +1,199 @@
+{% extends "base.html" %} {% block title %}Shared Objects{% endblock %} {% block content %}
+<div class="container-fluid">
+    <div class="row h">
+        <div class="col-9" style="height:calc(100vh - 58px); overflow-y:scroll;">
+            <div class="container">
+                <br>
+                <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search_obj" placeholder="Search for objects..." style="font-size: 16px; height:56px;">
+                        <select class="form-select" name="sort">
+                            <option value="newest" align="center">Newest</option>
+                            <option value="popular" align="center">Popular</option>
+                            <option value="oldest" align="center">Oldest</option>
+                        </select>
+                        <button type="submit" class="btn btn-secondary">Send</button>
+                    </div>
+                </form>
+                <br>
+                <div class="input-group justify-content-center">
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                            <input type="hidden" value="{{ sort }}" name="sort" />
+                            <button class="btn btn-outline-secondary" type="submit" name="page" value="0">First</button>
+                        </form>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                            <input type="hidden" value="{{ sort }}" name="sort" />
+                            <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ page-1 if page > 0 else 0 }}">Previous</button>
+                        </form>
+                        &nbsp;
+                        <span class="border border-secondary p-1 text-center">{{ page+1 }} / {{ ceil(objects|length / objects_per_page) }}</span>
+                        &nbsp;
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                            <input type="hidden" value="{{ sort }}" name="sort" />
+                            <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ page+1 if page < ceil(objects|length / objects_per_page)-1 else ceil(objects|length / objects_per_page)-1 }}">Next</button>
+                        </form>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                            <input type="hidden" value="{{ sort }}" name="sort" />
+                            <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ ceil(objects|length / objects_per_page)-1 }}">Last</button>
+                        </form>
+                </div>
+                <br>
+                <div class="row w-100 justify-content-center">
+                {% for i in range(page * objects_per_page, (page+1) * objects_per_page if (page < ceil(objects|length / objects_per_page)-1 or objects|length % objects_per_page == 0) and objects|length > 0 else page * objects_per_page + objects|length % objects_per_page) %}
+                    <div class="card" style="width: 20rem; height: 30rem; margin: 4px;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{objects[i][1].name}}</h5>
+                            <p>By {{objects[i][0].username}} <br>
+                            Shared on {{objects[i][1].shared_time}} <br>
+                            Saved by {{get_shared_object_popularity(objects[i][0].id, objects[i][1].name)}} users</p>
+                            <div class="col" style="height:16rem; overflow-y:auto">
+                                <p class="card-text">
+                                    Variables: <br>- {{ ', '.join(objects[i][1].variables) }}
+
+                                    {% if objects[i][1].functions|length > 0 %}
+                                    <br><br> Functions:
+                                    {% for funct in objects[i][1].functions.keys() %}
+                                        <br>- {{ funct }}({{ ', '.join(objects[i][1].functions.get(funct).args) }}) = {{ objects[i][1].functions.get(funct).funct }}
+                                    {% endfor %}
+                                    {% endif %}
+
+                                    {% if objects[i][1].static_variables|length > 0 %}
+                                    <br><br> Static Variables:
+                                    {% for staticvar in objects[i][1].static_variables.keys() %}
+                                        <br>- {{ staticvar }} = {{ objects[i][1].static_variables[staticvar].__repr__() }}
+                                    {% endfor %}
+                                    {% endif %}
+
+                                    {% if objects[i][1].static_functions|length > 0 %}
+                                    <br><br> Static Functions:
+                                    {% for staticfunct in objects[i][1].static_functions.keys() %}
+                                        <br>- {{ staticfunct }}({{ ', '.join(objects[i][1].static_functions.get(staticfunct).args) }}) = {{ objects[i][1].static_functions.get(staticfunct).funct }}
+                                    {% endfor %}
+                                    {% endif %}
+                                </p>
+                            </div> 
+                            <br>
+                            <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                                <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                                <input type="hidden" value="{{ sort }}" name="sort" />
+                                {% if objects[i][0].id == user.id %}
+                                    <input type="hidden" value="{{ objects[i][1].name }}" name="unshare" />
+                                    <button type="submit" class="btn btn-primary">Unshare</button>
+                                {% else %}
+                                    <input type="hidden" value="{{ objects[i][0].id|string }}" name="user_id" />
+                                    <input type="hidden" value="{{ objects[i][1].name }}" name="obj" />
+                                    {% if get_is_saved(objects[i][0].id, objects[i][1].name) %}
+                                        <input type="hidden" value="false" name="save" />
+                                        <button type="submit" class="btn btn-primary">Unsave</button>
+                                    {% else %}
+                                        <input type="hidden" value="true" name="save" />
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    {% endif %}
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            <br>
+            <div class="input-group justify-content-center">
+                    <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                        <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                        <input type="hidden" value="{{ sort }}" name="sort" />
+                        <button class="btn btn-outline-secondary" type="submit" name="page" value="0">First</button>
+                    </form>
+                    <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                        <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                        <input type="hidden" value="{{ sort }}" name="sort" />
+                        <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ page-1 if page > 0 else 0 }}">Previous</button>
+                    </form>
+                    &nbsp;
+                    <span class="border border-secondary p-1 text-center">{{ page+1 }} / {{ ceil(objects|length / objects_per_page) }}</span>
+                    &nbsp;
+                    <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                        <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                        <input type="hidden" value="{{ sort }}" name="sort" />
+                        <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ page+1 if page < ceil(objects|length / objects_per_page)-1 else ceil(objects|length / objects_per_page)-1 }}">Next</button>
+                    </form>
+                    <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                        <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                        <input type="hidden" value="{{ sort }}" name="sort" />
+                        <button class="btn btn-outline-secondary" type="submit" name="page" value="{{ ceil(objects|length / objects_per_page)-1 }}">Last</button>
+                    </form>
+            </div>
+            <br>
+        </div>
+        <div class="col-3" style="height:calc(100vh - 58px); overflow-y:scroll; overflow-x:hidden;">
+            <ol class="list-group" style="width:24.1vw; margin-left:-15px;">
+                <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                    <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                    <input type="hidden" value="{{ sort }}" name="sort" />
+                    <input type="hidden" value="{{ 2 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[2] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in user.objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="false" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ user.objects.get(object)|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <div class="input-group">
+                                <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                                <input type="hidden" value="{{ sort }}" name="sort" />
+                                <input type="text" class="form-control" name="def_obj" placeholder="Enter an object definition..." style="font-size: 16px; height:56px;">
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                    <input type="hidden" value="{{ search_obj }}" name="search_obj" />
+                    <input type="hidden" value="{{ sort }}" name="sort" />
+                    <input type="hidden" value="{{ 7 }}" name="collapsed" />
+                    <button type="submit" class="list-group-item list-group-item-action list-group-item-secondary">Saved Objects</button>
+                </form>
+                <div class="col" style="padding: 0; margin: 0;">
+                    <div class="collapse multi-collapse {{'show' if user.collapsed[7] else ''}}" id="collapse_objects">
+                        <ol class="list-group w-100">
+                            {% for object in saved_objects.keys() %}
+                            <form action="{{ url_for('views.object') }}" method="POST">
+                                <input type="hidden" value="{{ saved_objects.get(object)[0]|string }}" name="user_id" />
+                                <input type="hidden" value="{{ object }}" name="obj" />
+                                <input type="hidden" value="true" name="saved" />
+                                <button class="list-group-item list-group-item-action" type="submit">
+                                    {{ saved_objects.get(object)[1]|string }}
+                                </button>
+                            </form>
+                            {% endfor %}
+                        </ol>
+                        <form action="{{ url_for('views.shared_objects') }}" method="POST">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search_obj" placeholder="Search for objects..." style="font-size: 16px; height:56px;">
+                                <select class="form-select" name="sort">
+                                    <option value="newest" align="center">Newest</option>
+                                    <option value="popular" align="center">Popular</option>
+                                    <option value="oldest" align="center">Oldest</option>
+                                </select>
+                                <button type="submit" class="btn btn-secondary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}
